@@ -18,7 +18,6 @@ class Session
     public function __construct()
     {
         if (!session_id()) {
-            session_save_path(CONF_SES_PATH);
             session_start();
         }
     }
@@ -128,7 +127,7 @@ class Session
     public function csrf(): void
     {
         //cria uma criptografica basica para o token
-        $_SESSION['csrf_token'] = base64_encode(random_bytes(20));
+        $_SESSION['csrf_token'] = md5(uniqid(rand(), true));
     }
 
 

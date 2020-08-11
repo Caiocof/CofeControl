@@ -21,7 +21,7 @@ function is_email(string $email): bool
 function is_passwd(string $password): bool
 {
     //verifica se não e uma hash, antes de verificar os parametros definidos
-    if (password_get_info($password)['algo']){
+    if (password_get_info($password)['algo']) {
         return true;
     }
 
@@ -204,13 +204,29 @@ function str_limit_chars(string $string, int $limit, string $pointer = "..."): s
  * @param string $path
  * @return string
  */
-function url(string $path): string
+function url(string $path = null): string
 {
-    //verifica se foi pasado uma / por parametro, caso foi remove, se não passa o path direto
-    $pathF = ($path[0] == "/" ? mb_substr($path, 1) : $path);
+    //verificando se na URL tem o endereço local
+    if (strpos($_SERVER['HTTP_HOST'], "localhost")) {
+        //verificando se tem o path
+        if ($path) {
+            //verifica se foi pasado uma / por parametro, caso foi remove, se não passa o path direto
+            $pathF = ($path[0] == "/" ? mb_substr($path, 1) : $path);
+            //retornando a url base concatenada com uma barra e o caminho do path
+            return CONF_URL_TEST . "/" . $pathF;
+        }
+        return CONF_URL_TEST;
+    }
 
-    //retornando a url base concatenada com uma barra e o caminho do path
-    return CONF_URL_BASE . "/" . $pathF;
+    //ja que não estamos em URL local, vamos retornar um endereço do servidor
+    if ($path) {
+        //verifica se foi pasado uma / por parametro, caso foi remove, se não passa o path direto
+        $pathF = ($path[0] == "/" ? mb_substr($path, 1) : $path);
+        //retornando a url base concatenada com uma barra e o caminho do path
+        return CONF_URL_BASE . "/" . $pathF;
+    }
+    return CONF_URL_BASE;
+
 }
 
 /**METODO PARA REDIRECIONAMENTO INTERNO

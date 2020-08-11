@@ -10,8 +10,9 @@ define("CONF_DB_NAME", "fullphp");
 /**
  * PROJECT URLs
  */
-define("CONF_URL_BASE", "http://localhost/WORKES/cafeControl/");
-define("CONF_URL_ADMIN", CONF_URL_BASE . "/admin");
+define("CONF_URL_BASE", "http://cafecontrol.com.br");
+define("CONF_URL_TEST", "http://localhost/WORKES/cafeControl");
+define("CONF_URL_ADMIN", "/admin");
 
 /**
  * SITE
@@ -59,6 +60,7 @@ define("CONF_MESSAGE_ERROR", "error");
  */
 define("CONF_VIEW_PATH", __DIR__ . "/../../shared/views");
 define("CONF_VIEW_EXT", "php");
+define("CONF_VIEW_THEME", "cafecontrol");
 
 /**
  * UPLOAD

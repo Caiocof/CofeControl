@@ -229,6 +229,35 @@ function url(string $path = null): string
 
 }
 
+/**METODO PARA RETORNAR OS CAMINHOS DO TEMA APLICADO NO SITE
+ * @param string|null $path
+ * @return string
+ */
+function theme(string $path = null): string
+{
+    //verificando se na URL tem o endereço local
+    if (strpos($_SERVER['HTTP_HOST'], "localhost")) {
+        //verificando se tem o path
+        if ($path) {
+            //verifica se foi pasado uma / por parametro, caso foi remove, se não passa o path direto
+            $pathF = ($path[0] == "/" ? mb_substr($path, 1) : $path);
+            //retornando a url base concatenada com uma barra e o caminho do path
+            return CONF_URL_TEST . "/themes/" . CONF_VIEW_THEME . "/" . $pathF;
+        }
+
+        return CONF_URL_TEST . "/themes/" . CONF_VIEW_THEME;
+    }
+
+    //ja que não estamos em URL local, vamos retornar um endereço do servidor
+    if ($path) {
+        //verifica se foi pasado uma / por parametro, caso foi remove, se não passa o path direto
+        $pathF = ($path[0] == "/" ? mb_substr($path, 1) : $path);
+        //retornando a url base concatenada com uma barra e o caminho do path
+        return CONF_URL_BASE . "/themes/" . CONF_VIEW_THEME . "/" . $pathF;
+    }
+    return CONF_URL_BASE . "/themes/" . CONF_VIEW_THEME;
+}
+
 /**METODO PARA REDIRECIONAMENTO INTERNO
  * @param string $url
  */

@@ -17,7 +17,7 @@ class Web extends Controller
      */
     public function __construct()
     {
-        parent::__construct(__DIR__ . "/../../views/" . CONF_VIEW_THEME . "/");
+        parent::__construct(__DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/");
     }
 
     /**
@@ -25,7 +25,9 @@ class Web extends Controller
      */
     public function home(): void
     {
-
+        echo $this->view->render("home", [
+            "title" => "CaféControl - Gerencie sua contas com o melhor café"
+        ]);
     }
 
     /*
@@ -34,7 +36,9 @@ class Web extends Controller
      */
     public function error(array $data): void
     {
-
+        echo $this->view->render("error", [
+            "title" => "{$data['errcode']} | Ooops!"
+        ]);
     }
 
 }

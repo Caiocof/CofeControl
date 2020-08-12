@@ -1,6 +1,6 @@
 <h1 align="center">
 <br>
-  <img src="YOUR_LOGO_URL" alt="COFECONTROL" width="120">
+  <img src="https://github.com/Caiocof/CofeControl/blob/master/views/cafecontrol/__template/assets/images/favicon.png?raw=true" alt="COFECONTROL" width="120">
 <br>
 <br>
 CofeControl

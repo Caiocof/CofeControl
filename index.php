@@ -23,6 +23,17 @@ $route = new Router(url(), ":");
 $route->namespace("Source\App");
 $route->get("/", "Web:home");
 $route->get("/sobre", "Web:about");
+$route->get("/termos", "Web:terms");
+
+//blog
+$route->get("/blog", "Web:blog");
+$route->get("/blog/page/{page}", "Web:blog");
+$route->get("/blog/{postName}", "Web:blogPost");
+
+//auth
+$route->get("/entrar", "Web:login");
+$route->get("/recuperar", "Web:forget");
+$route->get("/cadastrar", "Web:register");
 
 
 /**
@@ -41,7 +52,7 @@ $route->dispatch();
 /**CASO O DISPATCH NÃO CONSIGA TER SUCESSO E LANÇADO PARA CA
  * ERROR REDIRECT
  */
-if ($route->error()){
+if ($route->error()) {
     $route->redirect("/ooops/{$route->error()}");
 }
 

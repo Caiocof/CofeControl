@@ -279,9 +279,14 @@ function redirect(string $url): void
         exit;
     }
 
-    $location = url($url);
-    header("Location: {$location}");
-    exit;
+    //verifica se já não estamos na URL de redirecionamento antes de acessar
+    if (filter_input(INPUT_GET, "ROUTE", FILTER_DEFAULT) != $url) {
+        $location = url($url);
+        header("Location: {$location}");
+        exit;
+    }
+
+
 }
 
 /**###############

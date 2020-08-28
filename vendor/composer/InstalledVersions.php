@@ -19,7 +19,7 @@ private static $installed = array (
     'aliases' => 
     array (
     ),
-    'reference' => 'e798ee9dad656f5e802af54e72aae2cf1961adc9',
+    'reference' => '0f4642bd9fb63ee5e2f204b12a9c225ffc934031',
     'name' => 'caiocof/fsphp',
   ),
   'versions' => 
@@ -31,7 +31,7 @@ private static $installed = array (
       'aliases' => 
       array (
       ),
-      'reference' => 'e798ee9dad656f5e802af54e72aae2cf1961adc9',
+      'reference' => '0f4642bd9fb63ee5e2f204b12a9c225ffc934031',
     ),
     'coffeecode/cropper' => 
     array (

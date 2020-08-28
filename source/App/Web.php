@@ -5,6 +5,10 @@ namespace Source\App;
 
 
 use Source\Core\Controller;
+use Source\Models\Category;
+use Source\Models\Faq\Question;
+use Source\Models\Post;
+use Source\Models\User;
 use Source\Support\Pager;
 
 /**
@@ -53,7 +57,11 @@ class Web extends Controller
         );
         echo $this->view->render("about", [
             "head" => $head,
-            "video" => "8nvXVLu3Lxc"
+            "video" => "H43fXodv6WY",
+            "faq" => (new Question())
+                ->find("channel_id = :id", "id=1", "question, response")
+                ->order("order_by")
+                ->fetch(true)
         ]);
     }
 

@@ -20,12 +20,12 @@ function is_email(string $email): bool
  */
 function is_passwd(string $password): bool
 {
-    //verifica se não e uma hash, antes de verificar os parametros definidos
-    if (password_get_info($password)['algo']) {
+    //verifica se não e uma hash, antes de verificar os parametros definidos ou se a hack do password for maior que o minimo e menor que o maximo
+    if (password_get_info($password)['algo'] || (mb_strlen($password) >= CONF_PASSWD_MIN_LEN && mb_strlen($password) <= CONF_PASSWD_MAX_LEN)) {
         return true;
     }
 
-    return (mb_strlen($password) >= CONF_PASSWD_MIN_LEN && mb_strlen($password) <= CONF_PASSWD_MAX_LEN ? true : false);
+    return false;
 }
 
 /**TRANSFORMA A SENHA EM UMA HASH PARA ENVIAR AO BANCO
@@ -34,6 +34,10 @@ function is_passwd(string $password): bool
  */
 function passwd(string $password): string
 {
+    if (!empty(password_get_info($password)['algo'])) {
+        return $password;
+    }
+
     return password_hash($password, CONF_PASSWD_ALGO, CONF_PASSWD_OPTIONS);
 }
 
@@ -56,6 +60,11 @@ function passwd_rehash(string $hash): bool
     return password_needs_rehash($hash, CONF_PASSWD_ALGO, CONF_PASSWD_OPTIONS);
 }
 
+/**###################
+ * ###   REQUEST   ###
+ */###################
+
+
 /**CRIA UM INPUT PARA SER COLOCADO NO FORMULARIO, E MANTER O TOKEN DA SESSÃO ATIVO
  * @return string
  */
@@ -77,6 +86,18 @@ function csrf_verify($request): bool
         return false;
     }
     return true;
+}
+
+/**METODO QUE VERIFICA SE EXISTE ALGUMA MENSAGEM NO FLASH
+ * @return string|null
+ */
+function flash(): ?string
+{
+    $session = new \Source\Core\Session();
+    if ($flash = $session->flash()) {
+        echo $flash;
+    }
+    return null;
 }
 
 
@@ -238,6 +259,34 @@ function url_back(): string
     return ($_SERVER['HTTP_REFERER'] ?? url());
 }
 
+
+/**METODO PARA REDIRECIONAMENTO INTERNO
+ * @param string $url
+ */
+function redirect(string $url): void
+{
+    header("HTTP/1.1 302 Redirect");
+
+    if (filter_var($url, FILTER_VALIDATE_URL)) {
+        header("Location: {$url}");
+        exit;
+    }
+
+    //verifica se já não estamos na URL de redirecionamento antes de acessar
+    if (filter_input(INPUT_GET, "ROUTE", FILTER_DEFAULT) != $url) {
+        $location = url($url);
+        header("Location: {$location}");
+        exit;
+    }
+
+
+}
+
+
+/**##################
+ * ###   ASSETS   ###
+ */##################
+
 /**METODO PARA RETORNAR OS CAMINHOS DO TEMA APLICADO NO SITE
  * @param string|null $path
  * @return string
@@ -267,31 +316,21 @@ function theme(string $path = null): string
     return CONF_URL_BASE . "/themes/" . CONF_VIEW_THEME;
 }
 
-/**METODO PARA REDIRECIONAMENTO INTERNO
- * @param string $url
+/**
+ * @param string $image
+ * @param int $width
+ * @param int|null $height
+ * @return string
  */
-function redirect(string $url): void
+function image(string $image, int $width, int $height = null): string
 {
-    header("HTTP/1.1 302 Redirect");
-
-    if (filter_var($url, FILTER_VALIDATE_URL)) {
-        header("Location: {$url}");
-        exit;
-    }
-
-    //verifica se já não estamos na URL de redirecionamento antes de acessar
-    if (filter_input(INPUT_GET, "ROUTE", FILTER_DEFAULT) != $url) {
-        $location = url($url);
-        header("Location: {$location}");
-        exit;
-    }
-
-
+    return url() . "/" . (new \Source\Support\Thumb())->make($image, $width, $height);
 }
 
-/**###############
- * ###   URL   ###
- */###############
+
+/**################
+ * ###   DATA   ###
+ */################
 
 /**METODO PARA FORMATAÇÃO DE DATA
  * @param string $date

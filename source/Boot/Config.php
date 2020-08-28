@@ -51,6 +51,7 @@ define("CONF_PASSWD_ALGO", PASSWORD_DEFAULT);
 define("CONF_PASSWD_OPTION", ["cost" => 10]);
 
 /**
+ *
  * MESSAGE
  */
 define("CONF_MESSAGE_CLASS", "trigger");
@@ -64,7 +65,8 @@ define("CONF_MESSAGE_ERROR", "error");
  */
 define("CONF_VIEW_PATH", __DIR__ . "/../../shared/views");
 define("CONF_VIEW_EXT", "php");
-define("CONF_VIEW_THEME", "coffee");
+define("CONF_VIEW_THEME", "coffeeweb");
+define("CONF_VIEW_APP", "coffeeapp");
 
 /**
  * UPLOAD

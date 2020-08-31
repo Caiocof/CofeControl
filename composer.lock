@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1c452997ccb680e13d12e7ae09673c7a",
+    "content-hash": "7a1bd80ad9bc8cdf9721c28c55d529f2",
     "packages": [
         {
             "name": "coffeecode/cropper",
@@ -686,7 +686,8 @@
     "prefer-lowest": false,
     "platform": {
         "php": "^7.4",
-        "ext-pdo": "^7.4"
+        "ext-pdo": "^7.4",
+        "ext-json": "*"
     },
     "platform-dev": [],
     "plugin-api-version": "2.0.0"

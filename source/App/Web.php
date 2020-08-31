@@ -4,12 +4,15 @@
 namespace Source\App;
 
 
+use http\Url;
 use Source\Core\Controller;
+use Source\Models\Auth;
 use Source\Models\Category;
 use Source\Models\Faq\Question;
 use Source\Models\Post;
 use Source\Models\User;
 use Source\Support\Pager;
+use function League\Plates\Util\id;
 
 /**
  * WEB CONTROLLER
@@ -102,12 +105,53 @@ class Web extends Controller
      */
     public function blogSearch(array $data): void
     {
+        if (!empty($data['s'])) {
+            $search = filter_var($data['s'], FILTER_SANITIZE_STRIPPED);
+            echo json_encode(["redirect" => url("/blog/buscar/{$search}/1")]);
+            return;
+        }
+
+        if (empty($data['terms'])) {
+            redirect("/blog");
+        }
+
+        $search = filter_var($data['terms'], FILTER_SANITIZE_STRIPPED);
+        $page = (filter_var($data['page'], FILTER_VALIDATE_INT) >= 1 ? $data['page'] : 1);
+
+        $head = $this->seo->render(
+            "Pesquisa por {$search} - " . CONF_SITE_NAME,
+            "Confira os resultados de sua pesquisa para {$search}",
+            url("/blog/buscar/{$search}/{$page}"),
+            theme("/assets/images/share.jpg")
+        );
+
+        $blogSearch = (new Post())->find("title LIKE :s OR subtitle LIKE :s", "s=%{$search}%");
+
+        if (!$blogSearch->count()) {
+            echo $this->view->render("blog", [
+                "head" => $head,
+                "title" => "PESQUISA POR:",
+                "search" => $search
+            ]);
+            return;
+        }
+
+        $pager = new Pager(url("/blog/buscar/{$search}/"));
+        $pager->pager($blogSearch->count(), 9, $page);
+
+        echo $this->view->render("blog", [
+            "head" => $head,
+            "title" => "PESQUISA POR:",
+            "search" => $search,
+            "blog" => $blogSearch->limit($pager->limit())->offset($pager->offset())->fetch(true),
+            "paginator" => $pager->render()
+        ]);
 
     }
 
 
-    /**
-     * SITE BLOG POST
+    /**SITE BLOG POST
+     * @param array $data
      */
     public function blogPost(array $data): void
     {
@@ -173,11 +217,52 @@ class Web extends Controller
     }
 
 
-    /**
-     *SITE REGISTER ACCOUNT
+    /**SITE REGISTER ACCOUNT
+     * @param array|null $data
      */
-    public function register(): void
+    public function register(?array $data): void
     {
+
+        //verifica se o campo csrf tem conteudo
+        if (!empty($data['csrf'])) {
+
+            //verifica se o token csrf esta valido
+            if (!csrf_verify($data)) {
+                $json['message'] = $this->message->error("Erro ao enviar, favor use o formulário")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            //verifica se todos os campos estão preenchidos
+            if (in_array("", $data)) {
+                $json['message'] = $this->message->info("Preencha todos os campos para criar sua conta")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            $auth = new Auth();
+            $user = new User();
+
+            $user->bootstrap(
+                $data['first_name'],
+                $data['last_name'],
+                $data['email'],
+                $data['password']
+            );
+
+            if ($auth->register($user)) {
+                $json['message'] = url("/confirma");
+            } else {
+                $json['message'] = $auth->message()->render();
+            }
+
+            echo json_encode($json);
+            return;
+
+
+        }
+
+
         $head = $this->seo->render(
             "Cadastrar - " . CONF_SITE_NAME,
             CONF_SITE_DESC,

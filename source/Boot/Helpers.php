@@ -38,7 +38,7 @@ function passwd(string $password): string
         return $password;
     }
 
-    return password_hash($password, CONF_PASSWD_ALGO, CONF_PASSWD_OPTIONS);
+    return password_hash($password, CONF_PASSWD_ALGO, CONF_PASSWD_OPTION);
 }
 
 /**VERIFICA SE A SENHA CONFERE COM A HASH NO BANCO
@@ -57,7 +57,7 @@ function passwd_verify(string $password, string $hash): bool
  */
 function passwd_rehash(string $hash): bool
 {
-    return password_needs_rehash($hash, CONF_PASSWD_ALGO, CONF_PASSWD_OPTIONS);
+    return password_needs_rehash($hash, CONF_PASSWD_ALGO, CONF_PASSWD_OPTION);
 }
 
 /**###################

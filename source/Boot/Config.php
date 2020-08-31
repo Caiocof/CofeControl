@@ -10,8 +10,8 @@ define("CONF_DB_NAME", "fullphp");
 /**
  * PROJECT URLs
  */
-define("CONF_URL_BASE", "http://caff.com.br");
-define("CONF_URL_TEST", "http://localhost/WORKES/cafeControl");
+define("CONF_URL_BASE", "https://caff.com.br");
+define("CONF_URL_TEST", "https://www.localhost/WORKES/cafeControl");
 define("CONF_URL_ADMIN", "/admin");
 
 /**
@@ -22,6 +22,14 @@ define("CONF_SITE_TITLE", "Gerencie suas contas com o melhor café");
 define("CONF_SITE_DESC", "O NOME DA EMPRESA é um gerenciador de contas simples, poderoso e gratuito. O prazer de tomar um café e ter o controle total de suas contas.");
 define("CONF_SITE_LANG", "pt_BR");
 define("CONF_SITE_DOMAIN", "coffee.com.br");
+define("CONF_SITE_ADDR_STREET", "RUA BOA VISTA");
+define("CONF_SITE_ADDR_NUMBER", "1231");
+define("CONF_SITE_ADDR_COMPLEMENT", "SALA 202");
+define("CONF_SITE_ADDR_CITY", "VITORIA");
+define("CONF_SITE_ADDR_STATE", "BA");
+define("CONF_SITE_ADDR_ZIPCODE", "45000-000");
+
+
 
 /**
  * SOCIAL
@@ -54,11 +62,11 @@ define("CONF_PASSWD_OPTION", ["cost" => 10]);
  *
  * MESSAGE
  */
-define("CONF_MESSAGE_CLASS", "trigger");
-define("CONF_MESSAGE_INFO", "info");
-define("CONF_MESSAGE_SUCCESS", "success");
-define("CONF_MESSAGE_WARNING", "warning");
-define("CONF_MESSAGE_ERROR", "error");
+define("CONF_MESSAGE_CLASS", "message");
+define("CONF_MESSAGE_INFO", "info icon-info");
+define("CONF_MESSAGE_SUCCESS", "success icon-check-square-o");
+define("CONF_MESSAGE_WARNING", "warning icon-warning");
+define("CONF_MESSAGE_ERROR", "error icon-warning");
 
 /**
  * VIEW
@@ -89,8 +97,8 @@ define("CONF_IMAGE_QUALITY", ["jpg" => 75, "png" => 5]);
 define("CONF_MAIL_HOST", "smtp.sendgrid.net");
 define("CONF_MAIL_PORT", "587");
 define("CONF_MAIL_USER", "apikey");
-define("CONF_MAIL_PASS", "*********");
-define("CONF_MAIL_SENDER", ["name" => "Caio César", "address" => "*************"]);
+define("CONF_MAIL_PASS", "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");
+define("CONF_MAIL_SENDER", ["name" => "Caio César", "address" => "suporte@huntergame.com.br"]);
 define("CONF_MAIL_SUPPORT", "caiooliveira3652@outlook.com");
 
 

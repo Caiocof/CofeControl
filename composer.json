@@ -33,6 +33,7 @@
     "coffeecode/cropper": "1.3.*",
     "coffeecode/optimizer": "2.0.*",
     "coffeecode/paginator": "1.0.*",
-    "coffeecode/router": "1.0.*"
+    "coffeecode/router": "1.0.*",
+    "ext-json": "*"
   }
 }

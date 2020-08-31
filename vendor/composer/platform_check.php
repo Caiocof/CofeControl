@@ -14,6 +14,7 @@ extension_loaded('exif') || $missingExtensions[] = 'exif';
 extension_loaded('fileinfo') || $missingExtensions[] = 'fileinfo';
 extension_loaded('filter') || $missingExtensions[] = 'filter';
 extension_loaded('gd') || $missingExtensions[] = 'gd';
+extension_loaded('json') || $missingExtensions[] = 'json';
 extension_loaded('mbstring') || $missingExtensions[] = 'mbstring';
 extension_loaded('pcre') || $missingExtensions[] = 'pcre';
 extension_loaded('pdo') || $missingExtensions[] = 'pdo';

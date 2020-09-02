@@ -36,11 +36,16 @@ $route->get("/buscar/{terms}/{page}", "Web:blogSearch");
 //auth
 $route->group(null);
 $route->get("/entrar", "Web:login");
+$route->post("/entrar", "Web:login");
 
 $route->get("/cadastrar", "Web:register");
 $route->post("/cadastrar", "Web:register");
 
 $route->get("/recuperar", "Web:forget");
+$route->post("/recuperar", "Web:forget");
+
+$route->get("/recuperar/{code}", "Web:reset");
+$route->post("/recuperar/resetar", "Web:reset");
 
 
 //optin
@@ -50,6 +55,13 @@ $route->get("/obrigado/{email}", "Web:success");
 //services
 $route->get("/termos", "Web:terms");
 
+
+/**
+ * APP
+ */
+$route->group("/app");
+$route->get("/", "App:home");
+$route->get("/sair", "App:logout");
 
 /**
  * ERROR ROUTES

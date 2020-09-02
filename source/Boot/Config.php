@@ -94,11 +94,11 @@ define("CONF_IMAGE_QUALITY", ["jpg" => 75, "png" => 5]);
 /**
  * MAIL
  */
-define("CONF_MAIL_HOST", "smtp.sendgrid.net");
-define("CONF_MAIL_PORT", "587");
-define("CONF_MAIL_USER", "apikey");
-define("CONF_MAIL_PASS", "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");
-define("CONF_MAIL_SENDER", ["name" => "Caio César", "address" => "suporte@huntergame.com.br"]);
+define("CONF_MAIL_HOST", "");
+define("CONF_MAIL_PORT", "");
+define("CONF_MAIL_USER", "");
+define("CONF_MAIL_PASS", "");
+define("CONF_MAIL_SENDER", ["name" => "Caio César", "address" => ""]);
 define("CONF_MAIL_SUPPORT", "caiooliveira3652@outlook.com");
 
 

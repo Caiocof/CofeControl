@@ -183,11 +183,44 @@ class Web extends Controller
     }
 
 
-    /**
-     *SITE LOGIN
+    /**SITE LOGIN
+     * @param array|null $data
      */
-    public function login(): void
+    public function login(?array $data): void
     {
+
+        if (!empty($data['csrf'])) {
+            if (!csrf_verify($data)) {
+                $json['message'] = $this->message->error("Erro ao enviar, favor use o formulário")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            if (empty($data['email']) || empty($data['password'])) {
+                $json['message'] = $this->message->warning("Informe seu email e senha para entrar")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            // pegando o status do save
+            $save = (!empty($data['save']) ? true : false);
+            $auth = new Auth();
+
+            //criar o login
+            $login = $auth->login($data['email'], $data['password'], $save);
+
+            //validando o login
+            if ($login) {
+                $json['redirect'] = url("/app");
+            } else {
+                $json['message'] = $auth->message()->render();
+            }
+
+
+            echo json_encode($json);
+            return;
+        }
+
         $head = $this->seo->render(
             "Entrar - " . CONF_SITE_NAME,
             CONF_SITE_DESC,
@@ -195,16 +228,41 @@ class Web extends Controller
             theme("/assets/images/share.jpg")
         );
         echo $this->view->render("auth-login", [
-            "head" => $head
+            "head" => $head,
+            "cookie" => filter_input(INPUT_COOKIE, "autgEmail")
         ]);
     }
 
 
-    /**
-     *SITE FORGET PASSWORD
+    /**SITE FORGET PASSWORD
+     * @param array|null $data
      */
-    public function forget(): void
+    public function forget(?array $data): void
     {
+
+        if (!empty($data['csrf'])) {
+            if (!csrf_verify($data)) {
+                $json['message'] = $this->message->error("Erro ao enviar, favor use o formulário")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            if (empty($data['email'])) {
+                $json['message'] = $this->message->info("Informe seu e-mail para continuar")->render();
+                echo json_encode($json);
+                return;
+            }
+            $auth = new Auth();
+            if ($auth->forget($data['email'])) {
+                $json['message'] = $this->message->success("Acesse seu e-amil para recuperar a senha")->render();
+            } else {
+                $json['message'] = $auth->message()->render();
+            }
+
+            echo json_encode($json);
+            return;
+        }
+
         $head = $this->seo->render(
             "Recuperar Senha - " . CONF_SITE_NAME,
             CONF_SITE_DESC,
@@ -214,6 +272,55 @@ class Web extends Controller
         echo $this->view->render("auth-forget", [
             "head" => $head
         ]);
+    }
+
+
+    /**SITE FORGET RESET
+     * @param array $data
+     */
+    public function reset(array $data): void
+    {
+
+        if (!empty($data['csrf'])) {
+            if (!csrf_verify($data)) {
+                $json['message'] = $this->message->error("Erro ao enviar, favor use o formulário")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            if (empty($data['password']) || empty($data['password_re'])) {
+                $json['message'] = $this->message->info("Informe e repita a senha para continuar")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            list($email, $code) = explode("|", $data['code']);
+            $auth = new Auth();
+
+            if ($auth->reset($email, $code, $data['password'], $data['password_re'])) {
+                $this->message->success("Senha alterada com sucesso!")->flash();
+                $json['redirect'] = url("/entrar");
+            } else {
+                $json['message'] = $auth->message()->render();
+            }
+
+            echo json_encode($json);
+            return;
+        }
+
+
+        $head = $this->seo->render(
+            "Crie uma nova senha no " . CONF_SITE_NAME,
+            CONF_SITE_DESC,
+            url("/recuperar"),
+            theme("/assets/images/share.jpg")
+        );
+
+        echo $this->view->render("auth-reset", [
+            "head" => $head,
+            "code" => $data["code"]
+        ]);
+
     }
 
 
@@ -251,7 +358,7 @@ class Web extends Controller
             );
 
             if ($auth->register($user)) {
-                $json['message'] = url("/confirma");
+                $json['redirect'] = url("/confirma");
             } else {
                 $json['message'] = $auth->message()->render();
             }
@@ -286,25 +393,50 @@ class Web extends Controller
             url("/confirma"),
             theme("/assets/images/share.jpg")
         );
-        echo $this->view->render("optin-confirm", [
-            "head" => $head
+        echo $this->view->render("optin", [
+            "head" => $head,
+            "data" => (object)[
+                "title" => "Falta pouco! Confirme seu cadastro",
+                "desc" => "Enviamos um link de confirmação para seu e-mail. Acesse e siga as instruções para concluir seu cadastro
+                e comece a controlar com o NOME DA EMPRESA",
+                "image" => theme("/assets/images/optin-confirm.jpg")
+            ]
         ]);
     }
 
 
     /**
      * SITE OPTIN SUCCESS
+     * @param array $data
      */
-    public function success(): void
+    public function success(array $data): void
     {
+
+        //descriptografando o email passado pela URL
+        $email = base64_decode($data["email"]);
+        //buscando o usuário pelo e-mail obtido no URL
+        $user = (new User())->findByEmail($email);
+
+        if ($user && $user->status != "confirmed") {
+            $user->status = "confirmed";
+            $user->save();
+        }
+
         $head = $this->seo->render(
             "Bem-vindo(a) ao " . CONF_SITE_NAME,
             CONF_SITE_DESC,
             url("/obrigado"),
             theme("/assets/images/share.jpg")
         );
-        echo $this->view->render("optin-success", [
-            "head" => $head
+        echo $this->view->render("optin", [
+            "head" => $head,
+            "data" => (object)[
+                "title" => "Tudo pronto. Você já pode controlar :)",
+                "desc" => "Bem-vindo(a) ao seu controle de contas, vamos tomar um café?",
+                "image" => theme("/assets/images/optin-success.jpg"),
+                "link" => url("/entrar"),
+                "linkTitle" => "Fazer Login"
+            ]
         ]);
     }
 

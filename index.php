@@ -32,6 +32,8 @@ $route->get("/pg/{page}", "Web:blog");
 $route->get("/{uri}", "Web:blogPost");
 $route->post("/buscar", "Web:blogSearch");
 $route->get("/buscar/{terms}/{page}", "Web:blogSearch");
+$route->get("/em/{category}", "Web:blogCategory");
+$route->get("/em/{category}/{page}", "Web:blogCategory");
 
 //auth
 $route->group(null);
@@ -49,10 +51,12 @@ $route->post("/recuperar/resetar", "Web:reset");
 
 
 //optin
+$route->group(null);
 $route->get("/confirma", "Web:confirm");
 $route->get("/obrigado/{email}", "Web:success");
 
 //services
+$route->group(null);
 $route->get("/termos", "Web:terms");
 
 

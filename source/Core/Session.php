@@ -57,7 +57,7 @@ class Session
     /**metodo para setar uma nova função ele recebera uma chave e um value que pode ser mix
      * @param string $key
      * @param mixed $value
-     * @return $this
+     * @return Session
      */
     public function set(string $key, $value): Session
     {
@@ -68,7 +68,7 @@ class Session
 
     /**metodo para remover a sessao
      * @param string $key
-     * @return $this
+     * @return Session
      */
     public function unset(string $key): Session
     {
@@ -88,9 +88,9 @@ class Session
 
 
     /**metodo para gerar novo id na sessao
-     * @return $this
+     * @return Session
      */
-    public function regeneration(): Session
+    public function regenerate(): Session
     {
         session_regenerate_id(true);
         return $this;
@@ -98,7 +98,7 @@ class Session
 
 
     /**metodo de logout, para destruir a sessao
-     * @return $this
+     * @return Session
      */
     public function destroy(): Session
     {

@@ -20,7 +20,7 @@ class Auth extends Model
      */
     public function __construct()
     {
-        parent::__construct("user", ["id"], ["email", "password"]);
+        parent::__construct("users", ["id"], ["email", "password"]);
     }
 
 
@@ -90,7 +90,7 @@ class Auth extends Model
 
         //verifica se email é válido
         if (!is_email($email)) {
-            $this->message->warning("O e-mail informado não pe válido");
+            $this->message->warning("O e-mail informado não é válido");
             return false;
         }
 
@@ -99,7 +99,7 @@ class Auth extends Model
             setcookie("authEmail", $email, time() + 604800, "/");
         } else {
             //caso o campo não sejá marcado zeramos o cookie
-            setcookie("authEmail", null, time() + 3600, "/");
+            setcookie("authEmail", null, time() - 3600, "/");
         }
 
         //verifica se senha cumpri os parametros

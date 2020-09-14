@@ -27,12 +27,12 @@ class App extends Controller
     {
         echo flash();
         var_dump(Auth::user());
-        echo "<a title='Sair' href='" . url("/app/sair") . "'>Sais</a>";
+        echo "<a title='Sair' href='" . url("/app/sair") . "'>Sair</a>";
     }
 
     public function logout()
     {
-        (new Message())->info("Você saiu com sucesso" . Auth::user()->first_name . ". Volte logo :)")->flash();
+        (new Message())->info("Você saiu com sucesso " . Auth::user()->first_name . ". Volte logo :)")->flash();
 
         Auth::logout();
         redirect("/entrar");

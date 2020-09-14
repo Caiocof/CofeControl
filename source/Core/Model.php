@@ -89,7 +89,7 @@ abstract class Model
     //ou não esta acessivel.
     /**
      * @param $name
-     * @return |null
+     * @return null
      */
     public function __get($name)
     {
@@ -171,10 +171,10 @@ abstract class Model
 
 
     /**METODO PARA LIMITAR RESULTADOS
-     * @param string $limit
+     * @param int $limit
      * @return Model
      */
-    public function limit(string $limit): Model
+    public function limit(int $limit): Model
     {
         $this->limit = " LIMIT {$limit}";
         return $this;
@@ -182,10 +182,10 @@ abstract class Model
 
 
     /**METODO QUE DIZ APARTIR DE QUAL NUMERO VEM O RESULTADO
-     * @param string $offset
+     * @param int $offset
      * @return Model
      */
-    public function offset(string $offset): Model
+    public function offset(int $offset): Model
     {
         $this->offset = " OFFSET {$offset}";
         return $this;
@@ -280,17 +280,17 @@ abstract class Model
     {
         try {
             //montando o que sera setado
-            $dataSet = [];
+            $dateSet = [];
             foreach ($data as $bind => $value) {
-                $dataSet[] = "{$bind} = :{$bind}";
+                $dateSet[] = "{$bind} = :{$bind}";
             }
-            $dataSet = implode(", ", $dataSet);
+            $dateSet = implode(", ", $dateSet);
 
             //transformando os parametros em array
             parse_str($params, $params);
 
 
-            $stmt = Connect::getInstance()->prepare("UPDATE " . static::$entity . " SET {$dataSet} WHERE {$terms}");
+            $stmt = Connect::getInstance()->prepare("UPDATE " . static::$entity . " SET {$dateSet} WHERE {$terms}");
             //passando para o execute um filtro dos dados mesclados para atendender o prepare
             $stmt->execute($this->filter(array_merge($data, $params)));
 
@@ -311,7 +311,7 @@ abstract class Model
      * @param string $value
      * @return bool
      */
-    protected function delete(string $key, string $value): bool
+    public function delete(string $key, string $value): bool
     {
         try {
             $stmt = Connect::getInstance()->prepare("DELETE FROM " . static::$entity . " WHERE {$key} = :key");

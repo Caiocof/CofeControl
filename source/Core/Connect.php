@@ -19,6 +19,7 @@ class Connect
     ];
 
     //variavel que vai permitir conectar ao banco
+    /** @var \PDO */
     private static $instance;
 
 
@@ -31,7 +32,7 @@ class Connect
         if (empty(self::$instance)) {
             //caso não exista, cria uma
             try {
-                self::$instance = new PDO(
+                self::$instance = new \PDO(
                     "mysql:host=" . CONF_DB_HOST . ";dbname=" . CONF_DB_NAME,
                     CONF_DB_USER,
                     CONF_DB_PASS,

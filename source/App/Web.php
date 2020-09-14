@@ -4,7 +4,6 @@
 namespace Source\App;
 
 
-use http\Url;
 use Source\Core\Controller;
 use Source\Models\Auth;
 use Source\Models\Category;
@@ -12,7 +11,8 @@ use Source\Models\Faq\Question;
 use Source\Models\Post;
 use Source\Models\User;
 use Source\Support\Pager;
-use function League\Plates\Util\id;
+use function React\Promise\all;
+
 
 /**
  * WEB CONTROLLER
@@ -125,7 +125,7 @@ class Web extends Controller
             theme("/assets/images/share.jpg")
         );
 
-        $blogSearch = (new Post())->find("title LIKE :s OR subtitle LIKE :s", "s=%{$search}%");
+        $blogSearch = (new Post())->find("MATCH(title, subtitle) AGAINST(:s)", "s={$search}");
 
         if (!$blogSearch->count()) {
             echo $this->view->render("blog", [
@@ -146,6 +146,54 @@ class Web extends Controller
             "blog" => $blogSearch->limit($pager->limit())->offset($pager->offset())->fetch(true),
             "paginator" => $pager->render()
         ]);
+
+    }
+
+
+    /**SITE BLOG CATEGORY
+     * @param array $data
+     */
+    public function blogCategory(array $data): void
+    {
+        //recuperando a URI e tirando qualquer codigo
+        $categoryUri = filter_var($data['category'], FILTER_SANITIZE_STRIPPED);
+        //pegando a categoria pelo seu URI
+        $category = (new Category())->findByUri($categoryUri);
+
+        //verificando se tem a categoria
+        if (!$category) {
+            //caso não exista manda para a home do blog
+            redirect("/blog");
+        }
+
+        //pegando o categoria no blog
+        $blogCategory = (new Post())->find("category = :c", "c={$category->id}");
+        //pegando a pagina e eliminando entradas proibidas
+        $page = (!empty($data['page']) && filter_var($data['page'], FILTER_VALIDATE_INT >= 1 ? $data['page'] : 1));
+
+        $pager = new Pager(url("/blog/em/{$category->uri}"));
+        $pager->pager($blogCategory->count(), 9, $page);
+
+        $head = $this->seo->render(
+            "Artigos em {$category->title} - " . CONF_SITE_NAME,
+            $category->description,
+            url("/blog/em/{$category->uri}/{$page}"),
+            ($category->cover ? image($category->cover, 1200, 628) : theme("/assets/images/share.jpg"))
+        );
+
+        echo $this->view->render("blog", [
+            "head" => $head,
+            "title" => "Artigos em {$category->title}",
+            "desc" => $category->description,
+            "blog" => $blogCategory
+                ->limit($pager->limit())
+                ->offset($pager->offset())
+                ->order("post_at DESC")
+                ->fetch(true),
+            "paginator" => $pager->render()
+
+        ]);
+
 
     }
 
@@ -229,7 +277,7 @@ class Web extends Controller
         );
         echo $this->view->render("auth-login", [
             "head" => $head,
-            "cookie" => filter_input(INPUT_COOKIE, "autgEmail")
+            "cookie" => filter_input(INPUT_COOKIE, "authEmail")
         ]);
     }
 
@@ -254,7 +302,7 @@ class Web extends Controller
             }
             $auth = new Auth();
             if ($auth->forget($data['email'])) {
-                $json['message'] = $this->message->success("Acesse seu e-amil para recuperar a senha")->render();
+                $json['message'] = $this->message->success("Acesse seu e-mail para recuperar a senha")->render();
             } else {
                 $json['message'] = $auth->message()->render();
             }
@@ -453,13 +501,15 @@ class Web extends Controller
             theme("/assets/images/share.jpg")
         );
         echo $this->view->render("terms", [
-            "head" => $head,
-
+            "head" => $head
         ]);
     }
 
     /*
      * SITE NAV ERROR
+     * @param array $data
+     */
+    /**
      * @param array $data
      */
     public function error(array $data): void
@@ -476,7 +526,7 @@ class Web extends Controller
                 break;
             case "manutencao":
                 $error->code = "Ooops";
-                $error->title = "Desculpe. Estamos em manuteção! :/";
+                $error->title = "Desculpe. Estamos em manutenção! :/";
                 $error->message = "Voltamos logo! Por hora estamos trabalhando para melhorar nosso conteúdo para você controlar melhor suas contas :)";
                 $error->linkTitle = null;
                 $error->link = null;
@@ -485,7 +535,7 @@ class Web extends Controller
                 $error->code = $data['errcode'];
                 $error->title = "Ooops. Conteúdo indisponível :/";
                 $error->message = "Sentimos muito, mas o conteúdo que você tentou acessar não existe, está indisponível no momento ou foi removido :/";
-                $error->linkTitle = "Contínue navegando!";
+                $error->linkTitle = "Continue navegando!";
                 $error->link = url_back();
                 break;
         }

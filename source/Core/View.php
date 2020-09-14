@@ -29,7 +29,7 @@ class View
     /**RESPONSAVEL POR ADICIONAL A PASTA RAIZ
      * @param string $name
      * @param string $path
-     * @return $this
+     * @return View
      */
     public function path(string $name, string $path): View
     {

@@ -6,7 +6,7 @@
     'aliases' => 
     array (
     ),
-    'reference' => '1923d663c79dbf0d939ea0032466b2916e4df9b6',
+    'reference' => '7b949e97fc776a0bd4f80271f610e8dd554c2cc6',
     'name' => 'caiocof/fsphp',
   ),
   'versions' => 
@@ -18,7 +18,7 @@
       'aliases' => 
       array (
       ),
-      'reference' => '1923d663c79dbf0d939ea0032466b2916e4df9b6',
+      'reference' => '7b949e97fc776a0bd4f80271f610e8dd554c2cc6',
     ),
     'coffeecode/cropper' => 
     array (

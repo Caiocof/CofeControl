@@ -12,12 +12,19 @@ use Source\Core\Model;
  */
 class Post extends Model
 {
+
+    /**@var bool */
+    private $all;
+
     /**
      * Post constructor.
+     * @param bool $all = ignore status and post_at
      */
-    public function __construct()
+    public function __construct(bool $all = false)
     {
+        $this->all = $all;
         parent::__construct("posts", ["id"], ["title", "uri", "subtitle", "content"]);
+
     }
 
     /**
@@ -28,9 +35,14 @@ class Post extends Model
      */
     public function find(?string $terms = null, ?string $params = null, string $columns = "*")
     {
-        //os termos recebe uma query que indica que sua data de criação tem que ser menor que a data de hoje
-        $terms = "status = :status AND post_at <= NOW()" . ($terms ? " AND {$terms}" : "");
-        $params = "status=post" . ($params ? "&{$params}" : "");
+
+        //verifica o status da varial all
+        if (!$this->all) {
+            //os termos recebe uma query que indica que sua data de criação tem que ser menor que a data de hoje
+            $terms = "status = :status AND post_at <= NOW()" . ($terms ? " AND {$terms}" : "");
+            $params = "status=post" . ($params ? "&{$params}" : "");
+        }
+
         return parent::find($terms, $params, $columns);
     }
 

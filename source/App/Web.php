@@ -9,9 +9,10 @@ use Source\Models\Auth;
 use Source\Models\Category;
 use Source\Models\Faq\Question;
 use Source\Models\Post;
+use Source\Models\Report\Access;
+use Source\Models\Report\Online;
 use Source\Models\User;
 use Source\Support\Pager;
-use function React\Promise\all;
 
 
 /**
@@ -26,6 +27,9 @@ class Web extends Controller
     public function __construct()
     {
         parent::__construct(__DIR__ . "/../../themes/" . CONF_VIEW_THEME . "/");
+
+        (new Access())->report();
+        (new Online())->report();
     }
 
 
@@ -244,6 +248,12 @@ class Web extends Controller
                 return;
             }
 
+            if (request_limit("weblogin", 3, 60 * 5)) {
+                $json['message'] = $this->message->error("Você efetuou 3 tentativas de login, esse é o limite. Aguarde 5 minútos para tentar novamente")->render();
+                echo json_encode($json);
+                return;
+            }
+
             if (empty($data['email']) || empty($data['password'])) {
                 $json['message'] = $this->message->warning("Informe seu email e senha para entrar")->render();
                 echo json_encode($json);
@@ -300,6 +310,14 @@ class Web extends Controller
                 echo json_encode($json);
                 return;
             }
+
+            if (request_repeat("webforget", $data['email'])) {
+                $json['message'] = $this->message->error("Ooops! Você já tentou este e-mail antes")->render();
+                echo json_encode($json);
+                return;
+            }
+
+
             $auth = new Auth();
             if ($auth->forget($data['email'])) {
                 $json['message'] = $this->message->success("Acesse seu e-mail para recuperar a senha")->render();

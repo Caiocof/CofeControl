@@ -101,6 +101,61 @@ function flash(): ?string
 }
 
 
+/**METODO RESPONSAVEL POR LIMITAR A QUANTIDADE DE ENVIOS
+ * @param string $key
+ * @param int $limit
+ * @param int $seconds
+ * @return bool
+ */
+function request_limit(string $key, int $limit = 5, int $seconds = 60): bool
+{
+
+    $session = new \Source\Core\Session();
+    //verifica se já existe a sessão, depois se o tempo dela esta dentro do permitido, depois se a requisição e menor
+    //que a quantidade permitida
+    if ($session->has($key) && $session->$key->time >= time() && $session->$key->requests < $limit) {
+        $session->set($key, [
+            "time" => time() + $seconds,
+            "requests" => $session->$key->requests + 1
+        ]);
+        return false;
+    }
+
+    //verifica se o limite foi atingido
+    if ($session->has($key) && $session->$key->time >= time() && $session->$key->requests >= $limit) {
+        return true;
+    }
+
+    $session->set($key, [
+        "time" => time() + $seconds,
+        "requests" => 1
+    ]);
+
+    return false;
+
+}
+
+
+/**METODO RESPONSAVEL POR CONTROLAR A REPETIÇÃO DE ENVIOS E EMAIL
+ * @param string $field
+ * @param string $value
+ * @return bool
+ */
+function request_repeat(string $field, string $value): bool
+{
+    $session = new \Source\Core\Session();
+
+    //verifica se existe o campo field, e se o campo tem o mesmo valor do argumento value
+    if ($session->has($field) && $session->$field == $value) {
+        return true;
+    }
+
+    $session->set($field, $value);
+    return false;
+
+}
+
+
 /**##################
  * ###   STRING   ###
  */##################
@@ -392,7 +447,3 @@ function session(): \Source\Core\Session
     return new \Source\Core\Session();
 }
 
-
-/**#################
- * ###   MODEL   ###
- */#################

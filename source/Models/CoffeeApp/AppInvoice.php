@@ -46,24 +46,43 @@ class AppInvoice extends Model
             $start = new \DateTime($fixedItem->due_at);
             $end = new \DateTime("+{$afterMonths}month");
 
-            if ($fixedItem->period == "month"){
-                $interval = new \DateTime("P1M");
+            if ($fixedItem->period == "month") {
+                $interval = new \DateInterval("P1M");
             }
-            if ($fixedItem->period == "threeMonth"){
-                $interval = new \DateTime("P3M");
+            if ($fixedItem->period == "threeMonth") {
+                $interval = new \DateInterval("P3M");
             }
-            if ($fixedItem->period == "sixMonth"){
-                $interval = new \DateTime("P6M");
-            }
-
-            if ($fixedItem->period == "year"){
-                $interval = new \DateTime("P1Y");
+            if ($fixedItem->period == "sixMonth") {
+                $interval = new \DateInterval("P6M");
             }
 
+            if ($fixedItem->period == "year") {
+                $interval = new \DateInterval("P1Y");
+            }
+
+            $period = new \DatePeriod($start, $interval, $end);
+
+
+            //criando os laçamentos de acordo com o periodo
+            foreach ($period as $item) {
+
+                $getFixed = $this->find("user_id = :user AND invoice_of = :of AND year(due_at)= :year AND month(due_at) = :month",
+                    "user={$user->id}&of={$fixedItem->id}&year={$item->format('Y')}&month={$item->format('m')}}",
+                    "id")->fetch();
+
+                //verifica se a consulta deu retorno positimo e cria o tem
+                if (!$getFixed) {
+                    $newItem = $fixedItem;
+                    $newItem->id = null;
+                    $newItem->invoice_of = $invoice;
+                    $newItem->type = str_replace("fixed_", "", $newItem->type);
+                    $newItem->due_at = $item->format("Y-m-d");
+                    $newItem->status = ($item->format("Y-m-d") <= date("Y-m-d") ? "paid" : "unpaid");
+                    $newItem->save();
+                }
+            }
 
         }
-
-        var_dump($fixed);
 
     }
 

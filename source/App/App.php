@@ -155,9 +155,42 @@ class App extends Controller
     }
 
 
+    /**
+     * @param array $data
+     * @throws \Exception
+     */
     public function filter(array $data): void
     {
+        //verifica se foi passo um os paramentos caso não seja passa all
+        $status = (!empty($data['status']) ? $data['status'] : 'all');
+        $category = (!empty($data['category']) ? $data['category'] : 'all');
+        $date = (!empty($data['date']) ? $data['date'] : date("m/Y"));
 
+        //separa o mes e ano da variavel date
+        list($m, $y) = explode("/", $date);
+
+        //verifica se o mes e entre 1 e 12 caso não seja retorna o mes atual
+        $m = ($m >= 1 && $m <= 12 ? $m : date("m"));
+        //verifica se o ano e menor ou igual ao atual +10 anos  caso não seja passa ano atual +10
+        $y = ($y <= date("Y", strtotime("+10year")) ? $y : date("Y", strtotime("+10year")));
+
+        //o t no date pega o ultimo dia do mes
+        $start = new \DateTime(date("Y-m-t"));
+        //pega os valos das variaveis de mes e ano e acrecente 1mes ao resultado
+        $end = new \DateTime(date("Y-m-t", strtotime("{$y}-{$m}+1month")));
+        //pegando a diferença entre o start e end
+        $diff = $start->diff($end);
+
+        //verificando se a data esta a frente para lançar
+        if (!$diff->invert) {
+            //pegando quantidade de meses apartir dos dias de diferença
+            $afterMonths = (floor($diff->days / 30));
+            (new AppInvoice())->fixed($this->user, $afterMonths);
+        }
+
+        $redirect = ($data['filter'] == "income" ? "receber" : "pagar");
+        $json['redirect'] = url("/app/{$redirect}/{$status}/{$category}/{$m}-{$y}");
+        echo json_encode($json);
     }
 
     /**APP INCOME (Receber)
@@ -392,8 +425,7 @@ class App extends Controller
     /**
      * APP PROFILE (Perfil)
      */
-    public
-    function profile()
+    public function profile(): void
     {
         $head = $this->seo->render(
             "Meu perfil - " . CONF_SITE_NAME,

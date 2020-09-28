@@ -79,30 +79,4 @@ class Post extends Model
         }
         return null;
     }
-
-    /**
-     * @return bool
-     */
-    public function save(): bool
-    {
-
-        /** Post Update */
-        if (!empty($this->id)) {
-            $postId = $this->id;
-
-            $this->update($this->safe(), "id = :id", "id={$postId}");
-            if ($this->fail()) {
-                $this->message->error("Erro ao atualizar, verifique os dados");
-                return false;
-            }
-
-            /** Post Created */
-
-
-            $this->data = $this->findById($postId)->data();
-            return true;
-        }
-
-    }
-
 }

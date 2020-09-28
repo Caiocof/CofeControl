@@ -65,37 +65,4 @@ class Access extends Model
         return $this;
 
     }
-
-
-    /**METODO RESPONSAVEL POR SALVAR UM NOVO REGISTRO OU ATUALIZAR UM JA EXISTENTE
-     * @return bool
-     */
-    public function save(): bool
-    {
-        /** UPDATE ACCESS */
-        if (!empty($this->id)) {
-            $accessId = $this->id;
-            $this->update($this->safe(), "id = :id", "id={$accessId}");
-
-            if ($this->fail) {
-                $this->message->error("Erro ao atualizar, favor verificar os dados");
-                return false;
-            }
-        }
-
-
-        /** CREATED ACCESS */
-        if (empty($this->id)) {
-            $accessId = $this->create($this->safe());
-
-            if ($this->fail) {
-                $this->message->error("Erro ao salvar, favor verificar os dados");
-                return false;
-            }
-        }
-
-        $this->data = $this->findById($accessId)->data();
-        return true;
-    }
-
 }

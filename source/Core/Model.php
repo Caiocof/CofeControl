@@ -305,6 +305,43 @@ abstract class Model
 
     }
 
+    /**METODO RESPONSAVEL POR SALVAR UM NOVO REGISTRO OU ATUALIZAR UM JA EXISTENTE
+     * @return bool
+     */
+    public function save(): bool
+    {
+        if (!$this->required()) {
+            $this->message->warning("Preencha todos os campos para continuar");
+            return false;
+        }
+
+
+        /** UPDATE */
+        if (!empty($this->id)) {
+            $id = $this->id;
+            $this->update($this->safe(), "id = :id", "id={$id}");
+
+            if ($this->fail) {
+                $this->message->error("Erro ao atualizar, favor verificar os dados");
+                return false;
+            }
+        }
+
+
+        /** CREATED */
+        if (empty($this->id)) {
+            $id = $this->create($this->safe());
+
+            if ($this->fail) {
+                $this->message->error("Erro ao salvar, favor verificar os dados");
+                return false;
+            }
+        }
+
+        $this->data = $this->findById($id)->data();
+        return true;
+    }
+
 
     /**
      * @param string $terms

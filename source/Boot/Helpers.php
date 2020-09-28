@@ -221,6 +221,18 @@ function str_title(string $string): string
     return mb_convert_case(filter_var($string, FILTER_SANITIZE_SPECIAL_CHARS), MB_CASE_TITLE);
 }
 
+/**METORO QUE REMOVES OS ENTER's A MAIS NO TEXTAREA
+ * @param string $text
+ * @return string
+ */
+function str_textarea(string $text): string
+{
+    $text = filter_var($text, FILTER_SANITIZE_STRIPPED);
+    $arrayReplace = ["&#10;", "&#10;&#10;", "&#10;&#10;&#10;", "&#10;&#10;&#10;&#10;", "&#10;&#10;&#10;&#10;&#10;", "&#10;&#10;&#10;&#10;&#10;&#10;"];
+    return "<p>" . str_replace($arrayReplace, "</p><p>", $text) . "</p>";
+
+}
+
 /**USADO PARA CRIAR SUBTITULOS EM BLOG COM LIMITAÇÃO DE PALAVRAS
  * @param string $string
  * @return string
@@ -269,6 +281,15 @@ function str_limit_chars(string $string, int $limit, string $pointer = "..."): s
     //pega o texto, começa a contagem de 0 e vai ate o ultimo espaço dentro do limite informado
     $chars2 = mb_substr($string, 0, $chars);
     return "{$chars2}{$pointer}";
+}
+
+/**METODO QUE CONVERTE MOEDA
+ * @param string $price
+ * @return string
+ */
+function str_price(string $price): string
+{
+    return number_format($price, 2, ",", ".");
 }
 
 
@@ -342,11 +363,21 @@ function redirect(string $url): void
  * ###   ASSETS   ###
  */##################
 
+/**METORO QUE RETORNA O USUARIO LOGADO
+ * @return \Source\Models\User|null
+ */
+function user(): ?\Source\Models\User
+{
+    return \Source\Models\Auth::user();
+}
+
+
 /**METODO PARA RETORNAR OS CAMINHOS DO TEMA APLICADO NO SITE
  * @param string|null $path
+ * @param string $theme
  * @return string
  */
-function theme(string $path = null): string
+function theme(string $path = null, string $theme = CONF_VIEW_THEME): string
 {
     //verificando se na URL tem o endereço local
     if (strpos($_SERVER['HTTP_HOST'], "localhost")) {
@@ -355,10 +386,10 @@ function theme(string $path = null): string
             //verifica se foi pasado uma / por parametro, caso foi remove, se não passa o path direto
             $pathF = ($path[0] == "/" ? mb_substr($path, 1) : $path);
             //retornando a url base concatenada com uma barra e o caminho do path
-            return CONF_URL_TEST . "/themes/" . CONF_VIEW_THEME . "/" . $pathF;
+            return CONF_URL_TEST . "/themes/{$theme}/" . $pathF;
         }
 
-        return CONF_URL_TEST . "/themes/" . CONF_VIEW_THEME;
+        return CONF_URL_TEST . "/themes/{$theme}";
     }
 
     //ja que não estamos em URL local, vamos retornar um endereço do servidor
@@ -366,9 +397,9 @@ function theme(string $path = null): string
         //verifica se foi pasado uma / por parametro, caso foi remove, se não passa o path direto
         $pathF = ($path[0] == "/" ? mb_substr($path, 1) : $path);
         //retornando a url base concatenada com uma barra e o caminho do path
-        return CONF_URL_BASE . "/themes/" . CONF_VIEW_THEME . "/" . $pathF;
+        return CONF_URL_BASE . "/themes/{$theme}/" . $pathF;
     }
-    return CONF_URL_BASE . "/themes/" . CONF_VIEW_THEME;
+    return CONF_URL_BASE . "/themes/{$theme}";
 }
 
 /**

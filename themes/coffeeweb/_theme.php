@@ -32,8 +32,15 @@
                 <a class="link transition radius" title="Home" href="<?= url(); ?>">Home</a>
                 <a class="link transition radius" title="Sobre" href="<?= url("/sobre"); ?>">Sobre</a>
                 <a class="link transition radius" title="Blog" href="<?= url("/blog"); ?>">Blog</a>
-                <a class="link login transition radius icon-sign-in" title="Entrar"
-                   href="<?= url("/entrar"); ?>">Entrar</a>
+
+                <?php if (\Source\Models\Auth::user()): ?>
+                    <a class="link login transition radius icon-coffee" title="Controlar"
+                       href="<?= url("/app"); ?>">Controlar</a>
+                <?php else: ?>
+                    <a class="link login transition radius icon-sign-in" title="Entrar"
+                       href="<?= url("/entrar"); ?>">Entrar</a>
+                <?php endif; ?>
+
             </div>
         </nav>
     </div>

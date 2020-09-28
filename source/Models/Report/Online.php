@@ -88,38 +88,4 @@ class Online extends Model
     {
         $this->delete("updated_at <= NOW() - INTERVAL {$this->sessionTime} MINUTE", null);
     }
-
-
-    /**METODO RESPONSAVEL POR SALVAR OU ATUALIZAR DADOS DO BANCO
-     * @return bool
-     */
-    public function save(): bool
-    {
-        /** UPDATE ACCESS */
-        if (!empty($this->id)) {
-            $onlineId = $this->id;
-            $this->update($this->safe(), "id = :id", "id={$onlineId}");
-
-            if ($this->fail) {
-                $this->message->error("Erro ao atualizar, favor verificar os dados");
-                return false;
-            }
-
-        }
-
-
-        /** CREATED ACCESS */
-        if (empty($this->id)) {
-            $onlineId = $this->create($this->safe());
-
-            if ($this->fail) {
-                $this->message->error("Erro ao salvar, favor verificar os dados");
-                return false;
-            }
-        }
-
-        $this->data = $this->findById($onlineId)->data();
-        return true;
-    }
-
 }

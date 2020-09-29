@@ -9,6 +9,7 @@ use Source\Core\View;
 use Source\Models\Auth;
 use Source\Models\CoffeeApp\AppCategory;
 use Source\Models\CoffeeApp\AppInvoice;
+use Source\Models\CoffeeApp\AppWallet;
 use Source\Models\Post;
 use Source\Models\Report\Access;
 use Source\Models\Report\Online;
@@ -243,16 +244,17 @@ class App extends Controller
         );
 
         $categories = (new AppCategory())
-            ->find("type = :t", "t=expanse", "id,name")
+            ->find("type = :t", "t=expense", "id,name")
             ->order("order_by, name")
             ->fetch(true);
+
 
         echo $this->view->render("invoices", [
             "user" => $this->user,
             "head" => $head,
-            "type" => "expanse",
+            "type" => "expense",
             "categories" => $categories,
-            "invoices" => (new AppInvoice())->filter($this->user, "expanse", ($data ?? null)),
+            "invoices" => (new AppInvoice())->filter($this->user, "expense", ($data ?? null)),
             //criando os filtros que seram passador pela URL
             "filter" => (object)[
                 "status" => ($data['status'] ?? null),
@@ -404,11 +406,125 @@ class App extends Controller
 
 
     /**
-     * APP INVOICE (Fatura)
+     * @param array $data
      */
-    public
-    function invoice()
+    public function onpaid(array $data): void
     {
+        //buscando as faturas no BD
+        $invoice = (new AppInvoice())
+            ->find("user_id=:user AND id=:id", "user={$this->user->id}&id={$data['invoice']}")
+            ->fetch();
+
+        //verificando se teve algum retorno para ser atualizado
+        if (!$invoice) {
+            $this->message->error("Ooops! Ocorreu um erro ao atualizar o lançamento :/")->flash();
+            $json['reload'] = true;
+            echo json_encode($json);
+            return;
+        }
+
+        //se a fatura estiver como paga muda para não paga
+        $invoice->status = ($invoice->status == "paid" ? "unpaid" : "paid");
+        $invoice->save();
+
+        //pegando ano e mas
+        $y = date("Y");
+        $m = date("m");
+
+        //verificado a data vinda pelo argumento
+        if ($data["date"]) {
+            //retirando a data do argumento
+            list($m, $y) = explode("/", $data["date"]);
+        }
+
+        $json["onpaid"] = (new AppInvoice())->balance($this->user, $y, $m, $invoice->type);
+        echo json_encode($json);
+
+    }
+
+
+    /**APP INVOICE (Fatura)
+     * @param array $data
+     */
+    public function invoice(array $data): void
+    {
+
+        //verificando se estamos atualizando a fatura
+        if (!empty($data['update'])) {
+
+            $invoice = (new AppInvoice())->find("user_id = :user AND id = :id", "user={$this->user->id}&id={$data['invoice']}")->fetch();
+
+            //verificando as informações da fatura par atualizar
+            if (!$invoice) {
+                $json['message'] = $this->message->error("Ooops! Não foi possivel carregar a fatura {$this->user->first_name}. Tente novamente!")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            //verificando o campo data para não sofrer alterações do inspecionar do navegador
+            if ($data['due_day'] < 1 || $data['due_day'] > $dayOfMonth = date("t", strtotime($invoice->due_at))) {
+                $json['message'] = $this->message->warning("O vencimento deve ser entre dia 1 e {$dayOfMonth} para este mês {$this->user->first_name}. Tente novamente!")->render();
+                echo json_encode($json);
+                return;
+            }
+
+            //filtrando os dados para retirar os codigos
+            $data = filter_var_array($data, FILTER_SANITIZE_STRING);
+            $due_day = date("Y-m", strtotime($invoice->due_at)) . "-" . $data['due_day'];
+
+            //pegando todos os dados para serem alterados
+            $invoice->category_id = $data['category'];
+            $invoice->description = $data['description'];
+            $invoice->due_at = date("Y-m-d", strtotime($due_day));
+            $invoice->value = str_replace([".", ","], ["", "."], $data['value']);
+            $invoice->wallet_id = $data['wallet'];
+            $invoice->status = $data['status'];
+
+            //verificando se tudo ocorreu bem com o salvamento
+            if (!$invoice->save()) {
+                $json['message'] = $invoice->message()->render();
+                echo json_encode($json);
+                return;
+            }
+
+            //pegando as faturas seguentes caso seja uma conta fixa
+            $invoiceOf = (new AppInvoice())->find("user_id = :user AND invoice_of = :of", "user={$this->user->id}&of={$invoice->id}")->fetch(true);
+
+            //verificando se o invoiceOf não esta vazio e se o tipo da fatura
+            if (!empty($invoiceOf) && in_array($invoice->type, ["fixed_income", "fixed_expense"])) {
+
+                foreach ($invoiceOf as $invoiceItem) {
+
+                    //verifica se a fatura esta sendo desativada, caso seja destroi
+                    if ($data['status'] == "unpaid" && $invoiceItem->status == "unpaid") {
+                        $invoiceItem->destroy();
+                    } else {
+                        $due_day = date('Y-m', strtotime($invoiceItem->due_at)) . "-" . $data['due_day'];
+                        $invoiceItem->category_id = $data['category'];
+                        $invoiceItem->description = $data['description'];
+                        $invoiceItem->wallet_id = $data['wallet'];
+
+
+                        //verificando se a fatura não foi paga ainda para atualizar valor e data de vencimento
+                        if ($invoiceItem->status == "unpaid") {
+                            $invoiceItem->value = str_replace([".", ","], ["", "."], $data['value']);
+                            $invoiceItem->due_at = date("Y-m-d", strtotime($due_day));
+                        }
+                        $invoiceItem->save();
+                    }
+
+                }
+
+            }
+
+
+            $json['message'] = $this->message->success("Pronto {$this->user->first_name} a atualização foi feita com sucesso!")->render();
+            echo json_encode($json);
+            return;
+
+        }
+
+
         $head = $this->seo->render(
             "Aluguel - " . CONF_SITE_NAME,
             CONF_SITE_DESC,
@@ -417,8 +533,27 @@ class App extends Controller
             false
         );
 
+
+        $invoice = (new AppInvoice())->find("user_id = :user AND id = :invoice",
+            "user={$this->user->id}&invoice={$data['invoice']}")->fetch();
+
+        if (!$invoice) {
+            $this->message->error("Ooops! Você tentou acessar uma fatura que não existe")->flash();
+            redirect("/app");
+        }
+
+
         echo $this->view->render("invoice", [
-            "head" => $head
+            "head" => $head,
+            "invoice" => $invoice,
+            "wallets" => (new AppWallet())
+                ->find("user_id = :user", "user={$this->user->id}", "id, wallet")
+                ->order("wallet")
+                ->fetch(true),
+            "categories" => (new AppCategory())
+                ->find("type = :type", "type={$invoice->category()->type}")
+                ->order("order_by")
+                ->fetch(true)
         ]);
     }
 

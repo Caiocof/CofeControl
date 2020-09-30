@@ -94,11 +94,11 @@ define("CONF_IMAGE_QUALITY", ["jpg" => 75, "png" => 5]);
 /**
  * MAIL
  */
-define("CONF_MAIL_HOST", "smtp-relay.sendinblue.com");
-define("CONF_MAIL_PORT", "587");
-define("CONF_MAIL_USER", "skyminha3@gmail.com");
-define("CONF_MAIL_PASS", "k5DnHB6SvRO3G79C");
-define("CONF_MAIL_SENDER", ["name" => "Caio César", "address" => "skyminha3@gmail.com"]);
+define("CONF_MAIL_HOST", "");
+define("CONF_MAIL_PORT", "");
+define("CONF_MAIL_USER", "");
+define("CONF_MAIL_PASS", "");
+define("CONF_MAIL_SENDER", ["name" => "Caio César", "address" => ""]);
 define("CONF_MAIL_SUPPORT", "caiooliveira3652@outlook.com");
 
 

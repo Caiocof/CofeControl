@@ -383,7 +383,7 @@ abstract class Model
             return false;
         }
 
-        $destroy = $this->delete("id = :id", "id={$this->Id}");
+        $destroy = $this->delete("id = :id", "id={$this->id}");
         return $destroy;
 
     }

@@ -16,6 +16,8 @@ use Source\Models\Report\Online;
 use Source\Models\User;
 use Source\Support\Email;
 use Source\Support\Message;
+use Source\Support\Thumb;
+use Source\Support\Upload;
 
 class App extends Controller
 {
@@ -265,6 +267,27 @@ class App extends Controller
         ]);
     }
 
+
+    /**
+     *
+     */
+    public function fixed(): void
+    {
+        $head = $this->seo->render(
+            "Minhas contas fixas - " . CONF_SITE_NAME,
+            CONF_SITE_DESC,
+            url(),
+            theme("/assets/images/share.jpg"),
+            false
+        );
+
+
+        echo $this->view->render("recurrences", [
+            "head" => $head,
+            "invoices" => (new AppInvoice())->find("user_id = :user AND type IN('fixed_income', 'fixed_expense')",
+                "user={$this->user->id}")->fetch(true)
+        ]);
+    }
 
     /**
      * @param array $data
@@ -557,11 +580,87 @@ class App extends Controller
         ]);
     }
 
-    /**
-     * APP PROFILE (Perfil)
-     */
-    public function profile(): void
+
+    public function remove(array $data): void
     {
+        //consultando a fatura no DB
+        $invoice = (new AppInvoice())->find("user_id = :user AND id = :invoice", "user={$this->user->id}&invoice={$data['invoice']}")->fetch();
+
+        //verificando se a fatura existe
+        if ($invoice) {
+            $invoice->destroy();
+        }
+
+        $this->message->success("Tudo pronto {$this->user->first_name}. O lançamento foi removido com sucesso!")->flash();
+        if ($invoice->type == "income" || $invoice->type == "fixed_income") {
+            $json['redirect'] = url("/app/receber");
+        }
+        if ($invoice->type == "expense" || $invoice->type == "fixed_expense") {
+            $json['redirect'] = url("/app/pagar.");
+        }
+        echo json_encode($json);
+    }
+
+
+    /**APP PROFILE (Perfil)
+     * @param array|null $data
+     */
+    public function profile(?array $data): void
+    {
+        //verificando o update
+        if (!empty($data['update'])) {
+            list($d, $m, $y) = explode("/", $data['datebirth']);
+
+            //carregando um novo usuario para não manipular a do DOM
+            $user = (new User())->findById($this->user->id);
+            $user->first_name = $data['first_name'];
+            $user->last_name = $data['last_name'];
+            $user->genre = $data['genre'];
+            $user->datebirth = "{$y}-{$m}-{$d}";
+            $user->document = preg_replace("/[^0-9]/", "", $data['document']);
+
+
+            //verifica se foi passado uma foto
+            if (!empty($_FILES['photo'])) {
+                $file = $_FILES['photo'];
+                $upload = new Upload();
+
+                //verifica se o usuario já tem uma foto, caso tenha limpa a pasta antes de colocar a nova
+                if ($this->user->photo()) {
+                    (new Thumb())->flush("storage/{$this->user->photo}");
+                    $upload->remove("storage/{$this->user->photo}");
+                }
+
+                //atribuido o upload já verificando se deu tudo certo
+                if (!$user->photo = $upload->image($file, "{$user->first_name} {$user->last_name} " . time(), 360)) {
+                    $json['message'] = $upload->message()->render();
+                    echo json_encode($json);
+                    return;
+                }
+
+            }
+
+            if (!empty($data['password'])) {
+                if ($data['password'] != $data['password_re']) {
+                    $json['message'] = $this->message->warning("Os campos de senha não conferem!")->render();
+                    echo json_encode($json);
+                    return;
+                }
+                $user->password = $data['password'];
+            }
+
+
+            if (!$user->save()) {
+                $json['message'] = $user->message()->render();
+                echo json_encode($json);
+                return;
+            }
+
+            $json['message'] = $this->message->success("Pronto {$this->user->first_name}. Seus dados já foram atualizados!")->render();
+            echo json_encode($json);
+            return;
+        }
+
         $head = $this->seo->render(
             "Meu perfil - " . CONF_SITE_NAME,
             CONF_SITE_DESC,
@@ -570,8 +669,11 @@ class App extends Controller
             false
         );
 
+
         echo $this->view->render("profile", [
-            "head" => $head
+            "head" => $head,
+            "user" => $this->user,
+            "photo" => ($this->user->photo() ? image($this->user->photo, 360, 360) : theme("/assets/images/avatar.jpg", CONF_VIEW_APP))
         ]);
     }
 

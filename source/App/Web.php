@@ -273,6 +273,7 @@ class Web extends Controller
 
             //validando o login
             if ($login) {
+                $this->message->success("Seja bem-vindo(a) de volta " . Auth::user()->first_name . "!")->flash();
                 $json['redirect'] = url("/app");
             } else {
                 $json['message'] = $auth->message()->render();
